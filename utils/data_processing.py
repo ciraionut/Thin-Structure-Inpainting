@@ -291,7 +291,7 @@ def get_image(image_id,
               training=True,
               seed=DEFAULT_SEED
             ):
-     """
+    """
     Augmentation of a synthetic root to be more similar to chickpea root
     :param dilation: True/False whether to dilate the root
     :param noisy_texture: True/False whether to add noise into texture of the root
