@@ -299,15 +299,11 @@ def get_image(image_id,
     :param training: True/False whether at training stage
     :return: an transformed root image
     """
-
     # read image
     image = cv2.imread(image_id, 0)
-
     # normalize image into [0,1]
     _, image = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
     image = (image/255.).astype(np.uint8)
-
-
     # TODO resolve the randominess here
     # decide whether to randomize image or not
     p = np.random.uniform(0., 1.)
