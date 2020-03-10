@@ -248,8 +248,8 @@ def get_sliding_windows(image,
                 continue
 
     elif image_width >= size:
-        for h_idx in range(0, (image_height-size), size):
-            for w_idx in range(0, (image_width-size), size):
+        for h_idx in range(0, (image_height-size)+1, size):
+            for w_idx in range(0, (image_width-size)+1, size):
                 # a patch of size (extract_size, extract_size)
                 window = image[h_idx:h_idx+size, w_idx:w_idx+size]
                 # patch location of format (y_0, x_0, y_1, x_1)
@@ -331,6 +331,7 @@ def get_patches(image, size=256):
     """
     print("\n\nIMAGEN")
     print(image)
+    print(size)
     print(image.shape)
     windows, locations = get_sliding_windows(image, size)
     print(f"windows:{windows}, locations: {locations}")
