@@ -329,6 +329,8 @@ def get_patches(image, size=256):
     Get patches from a root image
     :return: windows and locations
     """
+    print("\n\nIMAGEN")
+    print(image)
     windows, locations = get_sliding_windows(image, size)
     print(f"windows:{windows}, locations: {locations}")
     return windows, locations
