@@ -52,6 +52,7 @@ def full_seg_collate_fn(data,
         locations = locations[:batch_size]
 
     print("\n\n\n")
+    print(f"{data}")
     print(f"{windows} {mask_type} {total_blob_masks} {training}")
 
     inputs, targets, batch_masks = preprocessing(windows, mask_type, total_blob_masks, training)
