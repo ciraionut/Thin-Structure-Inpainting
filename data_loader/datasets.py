@@ -168,7 +168,7 @@ class RoadDataset(Dataset):
         else:
             self.training = False
         self.base_path = os.path.join(dirname, 'data/road')
-        self.image_ids = get_files(os.path.join(self.base_path, which_set+'/'), format='tif')
+        self.image_ids = get_files(os.path.join(self.base_path, which_set+'/'), format='png')
 
     def __len__(self):
         return len(self.image_ids)
