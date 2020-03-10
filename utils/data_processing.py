@@ -331,6 +331,7 @@ def get_patches(image, size=256):
     """
     print("\n\nIMAGEN")
     print(image)
+    print(image.shape)
     windows, locations = get_sliding_windows(image, size)
     print(f"windows:{windows}, locations: {locations}")
     return windows, locations
