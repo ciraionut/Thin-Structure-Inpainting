@@ -315,7 +315,7 @@ class RoadDataLoader(DataLoader):
             self.shuffle = True
         else:
             self.shuffle = False
-
+        print("\n\n\nESNTRO ACA\n\n\n")
         super(RoadDataLoader, self).__init__(
             dataset=self.dataset,
             batch_size=1, # batch_size set to 1 as we use only 1 full images to extract many patches
@@ -406,10 +406,7 @@ class RetinalDataLoader(DataLoader):
         """
 
         assert mask_type in ['square', 'blob', 'brush', 'mix']
-        if mask_type in ['blob', 'mix']:
-            self.total_blob_masks = get_blob_masks(blob_masks_path)
-        else:
-            self.total_blob_masks = None
+        self.total_blob_masks = None
 
         self.mask_type = mask_type
         self.batch_size = batch_size

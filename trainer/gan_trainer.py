@@ -254,8 +254,7 @@ class GANTrainer(BaseGANTrainer):
         total_discriminator_global_loss = 0
         total_metrics = np.zeros(len(self.metrics))
 
-        for batch_idx, (inputs, targets, masks, locations, orig_window_length, full_image) in enumerate(
-                self.train_data_loader):
+        for batch_idx, (inputs, targets, masks, locations, orig_window_length, full_image) in enumerate(self.train_data_loader):
 
             inputs, targets = inputs.to(self.device), targets.to(self.device)
             batch_size = inputs.size(0)

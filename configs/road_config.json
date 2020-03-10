@@ -25,7 +25,7 @@
         "args":{
             "which_set": "train",
             "batch_size": 16,
-            "mask_type":"mix",
+            "mask_type":"square",
             "image_size":256,
             "num_workers":0
         }
@@ -35,7 +35,7 @@
         "args":{
             "which_set": "valid",
             "batch_size": 1,
-            "mask_type":"mix",
+            "mask_type":"square",
             "image_size":256,
             "num_workers":0
         }
@@ -45,7 +45,7 @@
         "args":{
             "which_set": "test",
             "batch_size": 1,
-            "mask_type":"mix",
+            "mask_type":"square",
             "image_size":256,
             "num_workers":0
         }
