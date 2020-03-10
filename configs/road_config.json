@@ -75,7 +75,7 @@
         "lambda_2":1,
         "lambda_3":1,
         "pretrain_generator_epochs":0,
-        "generator_pretrain_path":"saved/",
+        "generator_pretrain_path":"saved/generator",
         "pretrain_discriminator_epochs":0,
         "discriminator_pretrain_path":"saved/",
         "save_dir": "saved/",
