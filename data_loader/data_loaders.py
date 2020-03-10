@@ -33,6 +33,7 @@ def full_seg_collate_fn(data,
         image=image,
         size=image_size)
     orig_length = len(windows)
+    print(f"orig_length: {orig_length}")
 
     # if number of patches is greater than batch size, randomly select some patches for training
     if orig_length >= batch_size:

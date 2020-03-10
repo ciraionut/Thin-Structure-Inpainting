@@ -330,6 +330,7 @@ def get_patches(image, size=256):
     :return: windows and locations
     """
     windows, locations = get_sliding_windows(image, size)
+    print(f"windows:{windows}, locations: {locations}")
     return windows, locations
 
 
