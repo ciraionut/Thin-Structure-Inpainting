@@ -51,6 +51,9 @@ def full_seg_collate_fn(data,
         windows = windows[:batch_size]
         locations = locations[:batch_size]
 
+    print("\n\n\n")
+    print(f"{windows} {mask_type} {total_blob_masks} {training}")
+
     inputs, targets, batch_masks = preprocessing(windows, mask_type, total_blob_masks, training)
     inputs = inputs.transpose((0, 3, 1, 2))
     targets = targets.transpose((0, 3, 1, 2))
