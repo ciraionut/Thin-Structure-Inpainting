@@ -170,9 +170,9 @@ class RoadDataset(Dataset):
         self.base_path = os.path.join(dirname, 'data/road')
         path = os.path.join(self.base_path, which_set+'/')
         self.image_ids = get_files(path, format='png')
-        print("\n\n\n")
-        print(f"encontre {len(self.image_ids)} imagenes")
-        print(f"Busque en: {path}")
+        #print("\n\n\n")
+        #print(f"encontre {len(self.image_ids)} imagenes")
+        #print(f"Busque en: {path}")
 
     def __len__(self):
         return len(self.image_ids)

@@ -33,7 +33,7 @@ def full_seg_collate_fn(data,
         image=image,
         size=image_size)
     orig_length = len(windows)
-    print(f"orig_length: {orig_length}")
+    #print(f"orig_length: {orig_length}")
 
     # if number of patches is greater than batch size, randomly select some patches for training
     if orig_length >= batch_size:
@@ -52,9 +52,9 @@ def full_seg_collate_fn(data,
         windows = windows[:batch_size]
         locations = locations[:batch_size]
 
-    print("\n\n\n")
-    print(f"{data}")
-    print(f"{windows} {mask_type} {total_blob_masks} {training}")
+    #print("\n\n\n")
+    #print(f"{data}")
+    #print(f"{windows} {mask_type} {total_blob_masks} {training}")
 
     inputs, targets, batch_masks = preprocessing(windows, mask_type, total_blob_masks, training)
     inputs = inputs.transpose((0, 3, 1, 2))
@@ -317,7 +317,7 @@ class RoadDataLoader(DataLoader):
             self.shuffle = True
         else:
             self.shuffle = False
-        print("\n\n\nESNTRO ACA\n\n\n")
+        #print("\n\n\nESNTRO ACA\n\n\n")
         super(RoadDataLoader, self).__init__(
             dataset=self.dataset,
             batch_size=1, # batch_size set to 1 as we use only 1 full images to extract many patches
