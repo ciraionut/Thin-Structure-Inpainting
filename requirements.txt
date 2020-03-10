@@ -58,6 +58,7 @@ testpath==0.4.2
 toolz==0.9.0
 torch==1.0.1.post2
 torchvision==0.2.1
+torchgan
 tornado==5.1.1
 tqdm==4.31.1
 traitlets==4.3.2
