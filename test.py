@@ -14,10 +14,10 @@ def main(config, resume):
 
     # load state dict
     checkpoint = torch.load(resume, map_location='cpu')
-    if 'GAN' in config["name"] or 'PG' in config["name"] or 'Real' in config["name"]:
-        state_dict = checkpoint['generator_state_dict']
-    else:
-        state_dict = checkpoint['state_dict']
+    #if 'GAN' in config["name"] or 'PG' in config["name"] or 'Real' in config["name"]:
+    state_dict = checkpoint['generator_state_dict']
+    #else:
+    #    state_dict = checkpoint['state_dict']
     if config['n_gpu'] > 1:
         model = torch.nn.DataParallel(model)
     model.load_state_dict(state_dict)
