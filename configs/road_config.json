@@ -75,10 +75,10 @@
         "lambda_2":1,
         "lambda_3":1,
         "pretrain_generator_epochs":0,
-        "generator_pretrain_path":"saved/generator",
+        "generator_pretrain_path":"/content/drive/My Drive/Calimanut/gan/generator/",
         "pretrain_discriminator_epochs":0,
-        "discriminator_pretrain_path":"saved/",
-        "save_dir": "saved/",
+        "discriminator_pretrain_path":"/content/drive/My Drive/Calimanut/gan/discriminator/",
+        "save_dir": "/content/drive/My Drive/Calimanut/gan/",
         "save_period": 1,
         "verbosity": 2,
 
