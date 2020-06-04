@@ -31,20 +31,17 @@ class BaseGANTrainer:
         self.device, self.device_ids = self._prepare_device(config['n_gpu'])
         self.generator = models["generator"].to(self.device)
         self.local_discriminator = models["local_discriminator"].to(self.device)
-        self.global_discriminator = models["global_discriminator"].to(self.device)
 
         # paralleling the models if multiple GPUs
         if len(self.device_ids) > 1:
             self.generator = torch.nn.DataParallel(self.generator, device_ids=self.device_ids)
             self.local_discriminator = torch.nn.DataParallel(self.local_discriminator, device_ids=self.device_ids)
-            self.global_discriminator = torch.nn.DataParallel(self.global_discriminator, device_ids=self.device_ids)
 
         self.loss = loss
         self.metrics = metrics
         self.train_logger = train_logger
         self.generator_optimizer = optimizers["generator"]
         self.local_discriminator_optimizer = optimizers["local_discriminator"]
-        self.global_discriminator_optimizer = optimizers["global_discriminator"]
 
         # read training settings
         cfg_trainer = config['trainer']
@@ -216,19 +213,15 @@ class BaseGANTrainer:
         """
         generator_arch = type(self.generator).__name__
         local_discriminator_arch = type(self.local_discriminator).__name__
-        global_discriminator_arch = type(self.global_discriminator).__name__
         state = {
             'generator_arch': generator_arch,
             'local_discriminator_arch': local_discriminator_arch,
-            'global_discriminator_arch':global_discriminator_arch,
             'epoch': epoch,
             'logger': self.train_logger,
             'generator_state_dict': self.generator.state_dict(),
             'generator_optimizer': self.generator_optimizer.state_dict(),
             'local_discriminator_state_dict': self.local_discriminator.state_dict(),
             'local_discriminator_optimizer': self.local_discriminator_optimizer.state_dict(),
-            'global_discriminator_state_dict': self.global_discriminator.state_dict(),
-            'global_discriminator_optimizer': self.global_discriminator_optimizer.state_dict(),
             'monitor_best': self.mnt_best,
             'config': self.config
         }
@@ -268,14 +261,12 @@ class BaseGANTrainer:
 
         # load architecture params from checkpoint.
         if checkpoint['config']['generator_arch'] != self.config['generator_arch'] or\
-           checkpoint['config']['local_discriminator_arch'] != self.config['local_discriminator_arch'] or \
-           checkpoint['config']['global_discriminator_arch'] != self.config['global_discriminator_arch']:
+           checkpoint['config']['local_discriminator_arch'] != self.config['local_discriminator_arch']:
             self.logger.warning(
                 'Warning: Architecture configuration given in config file is different from that of checkpoint. ' + \
                 'This may yield an exception while state_dict is being loaded.')
         self.generator.load_state_dict(checkpoint['generator_state_dict'])
         self.local_discriminator.load_state_dict(checkpoint['local_discriminator_state_dict'])
-        self.global_discriminator.load_state_dict(checkpoint['global_discriminator_state_dict'])
 
         # load optimizer state from checkpoint only when optimizer type is not changed.
         if checkpoint['config']['generator_optimizer']['type'] != self.config['generator_optimizer']['type'] \
@@ -285,7 +276,6 @@ class BaseGANTrainer:
         else:
             self.generator_optimizer.load_state_dict(checkpoint['generator_optimizer'])
             self.local_discriminator_optimizer.load_state_dict(checkpoint['local_discriminator_optimizer'])
-            self.global_discriminator_optimizer.load_state_dict(checkpoint['global_discriminator_optimizer'])
 
         self.train_logger = checkpoint['logger']
         self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))

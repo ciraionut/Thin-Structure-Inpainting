@@ -7,7 +7,6 @@ import model.loss as module_loss
 import model.metric as module_metric
 import model.unet_model as module_g_arch
 import model.patch_discriminator as module_dl_arch
-import model.global_discriminator as module_dg_arch
 from trainer import GANTrainer
 from utils import Logger
 from eval.final_evaluator import UnetEvaluator
@@ -30,8 +29,6 @@ def main(config, resume):
     print(model["generator"])
     model["local_discriminator"] = get_instance(module_dl_arch, 'local_discriminator_arch', config)
     print(model["local_discriminator"])
-    model["global_discriminator"] = get_instance(module_dg_arch, 'global_discriminator_arch', config)
-    print(model["global_discriminator"])
 
     # get function handles of loss and metrics
     loss = {}
@@ -46,11 +43,8 @@ def main(config, resume):
     optimizer = {}
     generator_trainable_params = filter(lambda p: p.requires_grad, model["generator"].parameters())
     local_discriminator_trainable_params = filter(lambda p: p.requires_grad, model["local_discriminator"].parameters())
-    global_discriminator_trainable_params = filter(lambda p: p.requires_grad, model["global_discriminator"].parameters())
     optimizer["generator"] = get_instance(torch.optim, 'generator_optimizer', config, generator_trainable_params)
     optimizer["local_discriminator"] = get_instance(torch.optim, 'discriminator_optimizer', config, local_discriminator_trainable_params)
-    optimizer["global_discriminator"] = get_instance(torch.optim, 'discriminator_optimizer', config,
-                                                    global_discriminator_trainable_params)
     # lr_scheduler = None # get_instance(torch.optim.lr_scheduler, 'lr_scheduler', config, optimizer)
 
     trainer = GANTrainer(model, optimizer, loss, metrics,

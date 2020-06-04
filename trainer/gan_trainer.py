@@ -192,27 +192,8 @@ class GANTrainer(BaseGANTrainer):
         discriminator_loss.backward()
         return discriminator_loss.item()
 
-    def backward_global_D(self, other_inputs, outputs, targets, other_targets, real_labels, fake_labels):
-        # batch_size = outputs.size(0)
-        # other_inputs, other_targets, _, _, _, _ = self.prepare_patches(batch_size)
-        outputs = torch.where(outputs >= 0.5, torch.ones_like(outputs), torch.zeros_like(outputs))
-        dissimilarity_1 = self.global_discriminator(other_inputs, targets.unsqueeze(1).type(torch.cuda.FloatTensor))
-        dissimilarity_2 = self.global_discriminator(outputs, targets.unsqueeze(1).type(torch.cuda.FloatTensor))
-        similarity = self.global_discriminator(other_targets.unsqueeze(1).type(torch.cuda.FloatTensor),
-                                                   targets.unsqueeze(1).type(torch.cuda.FloatTensor))
-        dissimilarity_loss_1 = self.loss["vanilla_gan"](dissimilarity_1, fake_labels)
-        dissimilarity_loss_2 = self.loss["vanilla_gan"](dissimilarity_2, fake_labels)
-        similarity_loss = self.loss["vanilla_gan"](similarity, real_labels)
-        discriminator_loss = 0.5 * (dissimilarity_loss_1 + dissimilarity_loss_2) + similarity_loss
-        discriminator_loss.backward()
-
-        return discriminator_loss.item()
-
     def backward_G(self, outputs, probs, targets, locations, orig_window_length, full_image, other_full_image,
                    real_labels):
-        log_probs, rewards = self.global_discriminator.reward_forward(probs, locations, orig_window_length, full_image,
-                                                           other_full_image)
-        generator_global_loss = self.loss["pg"](rewards, log_probs)
 
         # outputs = self.generator(inputs)
         list_G = extract_patch_from_tensor(probs, patch_size=(128, 128))
@@ -223,10 +204,10 @@ class GANTrainer(BaseGANTrainer):
         generator_local_loss = generator_local_loss / len(list_G)
         generator_cce_loss = self.loss["ce"](outputs, targets)
 
-        generator_loss = self.lambda_1 * generator_cce_loss + self.lambda_2 * generator_local_loss + self.lambda_3 * generator_global_loss
+        generator_loss = self.lambda_1 * generator_cce_loss + self.lambda_2 * generator_local_loss
         generator_loss.backward()
 
-        return generator_loss.item(), generator_cce_loss.item(), generator_local_loss.item(), generator_global_loss.item()
+        return generator_loss.item(), generator_cce_loss.item(), generator_local_loss.item()
 
     def _train_epoch(self, epoch):
         """
@@ -243,15 +224,12 @@ class GANTrainer(BaseGANTrainer):
         """
         self.generator.train()
         self.local_discriminator.train()
-        self.global_discriminator.train()
 
         total_generator_cce_loss = 0
         total_generator_mask_cce_loss = 0
         total_generator_local_loss = 0
-        total_generator_global_loss = 0
         total_generator_loss = 0
         total_discriminator_local_loss = 0
-        total_discriminator_global_loss = 0
         total_metrics = np.zeros(len(self.metrics))
 
         for batch_idx, (inputs, targets, masks, locations, orig_window_length, full_image) in enumerate(self.train_data_loader):
@@ -270,30 +248,21 @@ class GANTrainer(BaseGANTrainer):
             # fix weigths for training discriminator
             for p in self.local_discriminator.parameters():
                 p.require_grad = True
-            # fix weigths for training discriminator
-            for p in self.global_discriminator.parameters():
-                p.require_grad = True
 
             # train the discriminator
             self.local_discriminator_optimizer.zero_grad()
-            self.global_discriminator_optimizer.zero_grad()
             local_discriminator_loss = self.backward_local_D(probs.detach(), other_targets, real_labels,
                                                              fake_labels)
-            global_discriminator_loss = self.backward_global_D(other_inputs, probs.detach(), targets, other_targets,
-                                                               real_labels, fake_labels)
+
             self.local_discriminator_optimizer.step()
-            self.global_discriminator_optimizer.step()
 
             # fix weigths for training discriminator
             for p in self.local_discriminator.parameters():
                 p.require_grad = False
-            # fix weigths for training discriminator
-            for p in self.global_discriminator.parameters():
-                p.require_grad = False
 
             # backward G
             self.generator_optimizer.zero_grad()
-            generator_total_loss, generator_cce_loss, generator_local_loss, generator_global_loss = self.backward_G(
+            generator_total_loss, generator_cce_loss, generator_local_loss = self.backward_G(
                 outputs, probs, targets, locations, orig_window_length, full_image, full_image, real_labels)
             self.generator_optimizer.step()
 
@@ -301,41 +270,33 @@ class GANTrainer(BaseGANTrainer):
             self.writer.add_scalar('generator_total_loss', generator_total_loss)
             self.writer.add_scalar('generator_crossentropy_loss', generator_cce_loss)
             self.writer.add_scalar('generator_local_loss', generator_local_loss)
-            self.writer.add_scalar('generator_global_loss', generator_global_loss)
             self.writer.add_scalar('local_discriminator_loss', local_discriminator_loss)
-            self.writer.add_scalar('global_discriminator_loss', global_discriminator_loss)
             total_generator_loss += generator_total_loss
             total_generator_cce_loss += generator_cce_loss
             total_generator_local_loss += generator_local_loss
-            total_generator_global_loss += generator_global_loss
             total_discriminator_local_loss += local_discriminator_loss
-            total_discriminator_global_loss += global_discriminator_loss
             total_metrics += self._eval_metrics(outputs, targets)
 
             if self.verbosity >= 2 and batch_idx % self.log_step == 0:
                 self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] '
-                                 'Generator: [CCE:{:.6f}, Local:{:.6f}, Global:{:.6f}, Total:{:.6f}] '
-                                 'Discriminator: [Local:{:.6f}, Global:{:.6f}]'.format(
+                                 'Generator: [CCE:{:.6f}, Local:{:.6f}, Total:{:.6f}] '
+                                 'Discriminator: [Local:{:.6f}]'.format(
                     epoch,
                     batch_idx * self.train_data_loader.batch_size,
                     self.train_data_loader.n_samples,
                     100.0 * batch_idx / len(self.train_data_loader),
                     generator_cce_loss,
                     generator_local_loss,
-                    generator_global_loss,
                     generator_total_loss,
-                    local_discriminator_loss,
-                    global_discriminator_loss
+                    local_discriminator_loss
                 ))
 
         log = {
             'generator_crossentropy_loss': total_generator_cce_loss / len(self.train_data_loader),
             'generator_mask_crossentropy_loss':total_generator_mask_cce_loss / len(self.train_data_loader),
             'generator_local_loss': total_generator_local_loss / len(self.train_data_loader),
-            'generator_global_loss': total_generator_global_loss / len(self.train_data_loader),
             'generator_total_loss': total_generator_loss / len(self.train_data_loader),
             'discriminator_local_loss': total_discriminator_local_loss / len(self.train_data_loader),
-            'discriminator_global_loss': total_discriminator_global_loss / len(self.train_data_loader),
             'metrics': (total_metrics / len(self.train_data_loader)).tolist()
         }
 
@@ -354,7 +315,6 @@ class GANTrainer(BaseGANTrainer):
         """
         self.generator.eval()
         self.local_discriminator.eval()
-        self.global_discriminator.eval()
         total_generator_val_loss = 0
         total_val_metrics = np.zeros(len(self.metrics))
 
@@ -411,6 +371,7 @@ class GANTrainer(BaseGANTrainer):
         plt.close(fig)
 
     def prepare_patches(self, batch_size):
+      try:
         index = np.random.randint(0, 5000)
         image = self.train_data_loader.dataset.__getitem__(index)
         batch_x, batch_y, batch_masks, locations, orig_window_length, image = full_seg_collate_fn(
@@ -421,8 +382,9 @@ class GANTrainer(BaseGANTrainer):
             total_blob_masks=self.train_data_loader.total_blob_masks,
             training=True
         )
-
         return batch_x, batch_y, batch_masks, locations, orig_window_length, image
+      except:
+        return prepare_patches(self, batch_size)
 
     def fill_inputs(self, probs, inputs, batch_masks):
         probability = probs.detach().cpu().numpy()

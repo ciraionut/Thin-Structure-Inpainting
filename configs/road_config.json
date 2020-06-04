@@ -73,18 +73,16 @@
         "epochs": 40,
         "lambda_1":1000,
         "lambda_2":1,
-        "lambda_3":1,
+        "lambda_3":0,
         "pretrain_generator_epochs":0,
         "generator_pretrain_path":"",
         "pretrain_discriminator_epochs":0,
         "discriminator_pretrain_path":"",
-        "save_dir": "/content/drive/My Drive/Calimanut/gan/",
+        "save_dir": "gan/",
         "save_period": 1,
         "verbosity": 2,
-
         "monitor": "min generator_val_loss",
         "early_stop": 5,
-
         "tensorboardX": true,
         "log_dir": "saved/runs"
     }
